@@ -80,8 +80,9 @@ def lex(code):
                     condition = strategy.split("where")[-1].strip()
                     tokens.append(("CLEAN", var_name, "remove rows", condition))
                 elif strategy.startswith("remove columns"):
-                    column_name = strategy.split("columns")[-1].strip()
-                    tokens.append(("CLEAN", var_name, "remove columns", column_name))
+                    columns = strategy.split("columns")[-1].strip()
+                    columns = [col.strip() for col in columns.split(',')]
+                    tokens.append(("CLEAN", var_name, "remove columns", columns))
                 elif strategy.startswith("custom"):
                     custom_match = re.match(r"custom = (.+)", strategy)
                     if custom_match:

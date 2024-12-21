@@ -87,12 +87,13 @@ def remove_columns(data, columns):
                     print(f"Column {col} removed successfully")
                 else:
                     print(f"Error: column '{col}' not found in the dataset")
-        # Handle single column
-        elif columns in data.columns:
-            data = data.drop(columns=[columns], inplace=False)
-            print(f"Column {columns} removed successfully")
-        else:
-            print(f"Error: column '{columns}' not found in the dataset")
+        else:  # Single column case
+            if columns in data.columns:
+                data = data.drop(columns=[columns], inplace=False)
+                print(f"Column {columns} removed successfully")
+            else:
+                print(f"Error: column '{columns}' not found in the dataset")
     except Exception as e:
-        print(f"Error removing columns '{columns}': {e}")
+        print(f"Error removing column(s) '{columns}' : {e}")
     return data
+

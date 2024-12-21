@@ -118,8 +118,13 @@ def interpret(ast):
                         variables[var_name] = remove_rows(variables[var_name], custom_value)
                         print(f"cleaned using {strategy} where {custom_value}")
                     elif strategy == "remove columns":
-                        variables[var_name] = remove_columns(variables[var_name], custom_value)
-                        print(f"cleaned using {strategy} column {custom_value}")
+                        if isinstance(custom_value, list): 
+                            for col in custom_value:
+                                variables[var_name] = remove_columns(variables[var_name], col) 
+                                print(f"cleaned using {strategy} column {col}")
+                        else:
+                            variables[var_name] = remove_columns(variables[var_name], custom_value)
+                            print(f"cleaned using {strategy} column {custom_value}")
                     else:
                         variables[var_name] = clean_data(variables[var_name], strategy, custom_value)
                 except Exception as e:
