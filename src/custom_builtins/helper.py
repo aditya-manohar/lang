@@ -3,4 +3,4 @@ def execute_block(ast, start_index):
         node = ast[i]
         if node[0] in {"ENDIF", "ELSE"}:
             break
-        interpret([node])  # Recurse into the block
+        interpret([node])  

@@ -54,6 +54,14 @@ def parse(tokens):
             strategy = token[2]
             custom_value = token[3]
             ast.append(("CLEAN",var_name,strategy,custom_value))
+        elif token[0] == "CHAIN":
+            var_name = token[1]
+            steps = token[2]
+            ast.append(("CHAIN",var_name,steps))
+        elif token[0] == "OUTPUT_COLUMNS":
+            var_name = token[1]
+            columns = token[2]
+            ast.append(("OUTPUT_COLUMNS",var_name,columns))
         elif token[0] == "SPLIT":
             ast.append(("SPLIT",token[1],token[2]))
         else:

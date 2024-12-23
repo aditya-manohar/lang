@@ -21,7 +21,6 @@ def lex(code):
             else:
                 raise RuntimeError(f"Unrecognized statement on line {line_num}")
 
-        # Handle output statement
         elif line.startswith("output"):
             match = re.match(r"output (.+)", line)
             if match:
@@ -91,14 +90,26 @@ def lex(code):
             else:
                 raise RuntimeError(f"Invalid clean syntax on line {line_num}")
 
-        elif line.startswith("split"):
-            match = re.match(r"split (\w+) by ([0-9\.]+)",line)
-            if match:
-                tokens.append(("SPLIT", match.group(1),float(match.group(2))))
-            else:
-                raise RuntimeError(f"Invalid split syntax on line {line_num}")
+        elif "->" in line:
+            steps = [step.strip() for step in line.split("->")]
+            var_name = steps[0]
+            steps = steps[1:]
 
-        # Handle assignment with '='
+            parsed_steps = []
+            for step in steps:
+                if step.startswith("remove columns"):
+                    match = re.match(r"remove columns (.+)",step)
+                    if match:
+                        columns = match.group(1).strip().split(',')
+                        columns = [col.strip() for col in columns]
+                        parsed_steps.append(("REMOVE_COLUMNS",columns))
+                    else:
+                        raise RuntimeError(f"Invalid remove column syntax")
+                else:
+                    parsed_steps.append(step)
+
+            tokens.append(("CHAIN",var_name,steps))
+
         elif '=' in line:
             var_name, value = map(str.strip, line.split('=', 1))
             if not var_name.isidentifier():

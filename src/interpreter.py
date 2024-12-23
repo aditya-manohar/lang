@@ -132,6 +132,40 @@ def interpret(ast):
             else:
                 print(f"Variable '{var_name}' not found")
 
+        elif node[0] == "CHAIN":
+            var_name = node[1]
+            steps = node[2]
+            current_data = variables[var_name]
+
+            for step in steps:
+                if step == "remove duplicates":
+                    current_data = clean_data(current_data,"remove duplicates")
+                elif step.startswith("remove rows where"):
+                    condition = step.split("where")[-1].strip()
+                    current_data = remove_rows(current_data, condition)
+                elif isinstance(step,tuple) and step[0] == "REMOVE_COLUMNS":
+                    columns = step[1]
+                    current_data = current_data.drop(columns=columns)
+                    print(f"Removed columns:{columns}")
+                elif step == "output":
+                    print(current_data)
+                else:
+                    raise ValueError(f"Unsupported chain operation: {step}")
+
+            variables[var_name] = current_data
+
+        elif node[0] == "OUTPUT_COLUMNS":
+            var_name = node[1]
+            columns = node[2]
+            if var_name in variables:
+                try:
+                    result = variables[var_name][columns]
+                    print(result)
+                except Exception as e:
+                    print(f"Error displaying selected columns: {e}")
+            else:
+                print(f"Variable '{var_name}' not found")
+
         elif node[0] == "SPLIT":
             data = variables.get('data')
             ratio = node[2]

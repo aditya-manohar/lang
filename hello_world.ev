@@ -1,5 +1,2 @@
 load 'data.csv' as data
-clean data using remove duplicates
-clean data using remove rows where str == 'manohar', str == 'aditya'
-clean data using remove columns str
-output data
+data -> remove duplicates -> remove rows where str == 'aditya', str == 'manu'  -> output
