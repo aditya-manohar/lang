@@ -1,2 +1,3 @@
 load 'data.csv' as data
-data -> remove duplicates -> remove rows where str == 'aditya', str == 'manu'  -> output
+data -> remove duplicates -> remove rows where str=='manu',str=='manohar' -> remove columns intent -> output
+

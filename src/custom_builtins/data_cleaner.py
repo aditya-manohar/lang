@@ -79,21 +79,23 @@ def remove_rows(data, conditions):
 
 def remove_columns(data, columns):
     try:
-        # Handle multiple columns
-        if isinstance(columns, list):
-            for col in columns:
-                if col in data.columns:
-                    data = data.drop(columns=[col], inplace=False)
-                    print(f"Column {col} removed successfully")
-                else:
-                    print(f"Error: column '{col}' not found in the dataset")
-        else:  # Single column case
-            if columns in data.columns:
-                data = data.drop(columns=[columns], inplace=False)
-                print(f"Column {columns} removed successfully")
-            else:
-                print(f"Error: column '{columns}' not found in the dataset")
+        # Handle multiple columns as a string (split by commas)
+        if isinstance(columns, str):
+            columns = [col.strip() for col in columns.split(',')]  # Split and clean up column names
+
+        # Ensure that columns to remove are actually in the data
+        missing_columns = [col for col in columns if col not in data.columns]
+        if missing_columns:
+            print(f"Warning: The following columns were not found: {', '.join(missing_columns)}")
+
+        # Drop the columns that are present in the DataFrame and return modified data
+        data = data.drop(columns=[col for col in columns if col in data.columns], inplace=False)
+        print(f"Columns {', '.join(columns)} removed successfully.")
+    
     except Exception as e:
-        print(f"Error removing column(s) '{columns}' : {e}")
-    return data
+        print(f"Error removing column(s) '{columns}': {e}")
+
+    return data  # Return modified data for chaining or non-chaining
+
+
 

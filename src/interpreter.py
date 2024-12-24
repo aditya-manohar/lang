@@ -143,10 +143,13 @@ def interpret(ast):
                 elif step.startswith("remove rows where"):
                     condition = step.split("where")[-1].strip()
                     current_data = remove_rows(current_data, condition)
-                elif isinstance(step,tuple) and step[0] == "REMOVE_COLUMNS":
-                    columns = step[1]
-                    current_data = current_data.drop(columns=columns)
-                    print(f"Removed columns:{columns}")
+                elif step.startswith("remove columns"):
+                    parts = step.split(" ")
+                    if len(parts) == 3 and parts[0] == 'remove' and parts[1] == 'columns':
+                        column_name = parts[2]
+                        current_data= remove_columns(current_data,column_name)
+                    else:
+                        raise ValueError(f"Invalid chain operation : {step}")
                 elif step == "output":
                     print(current_data)
                 else:
