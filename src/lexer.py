@@ -6,13 +6,11 @@ def lex(code):
     for line_num, line in enumerate(lines, start=1):
         line = line.strip()
 
-        # Skip empty lines
         if not line:
             continue
 
-        print(f"Processing line {line_num}: {line}")  # Debug output for each line
+        print(f"Processing line {line_num}: {line}") 
 
-        # Handle input statement
         if line.startswith('input'):
             tokens.append(('INPUT', 'input'))
             line = line[len('input'):].strip()
@@ -136,14 +134,13 @@ def lex(code):
             # else:
             #     raise RuntimeError(f"Unsupported value type on line {line_num}")
 
-        # Handle assignment without '=' (e.g., a 5)
         elif re.match(r"^\w+\s+\S+", line):
             var_name, value = line.split(maxsplit=1)
             if not var_name.isidentifier():
                 raise RuntimeError(f"Invalid variable name on line {line_num}")
             if value.isdigit():
                 tokens.append(("SET", var_name, "NUMBER", int(value)))
-            elif re.match(r"^\d+\.\d+$", value):  # Check for float
+            elif re.match(r"^\d+\.\d+$", value):
                 tokens.append(("SET", var_name, "FLOAT", float(value)))
             elif value == "true":
                 tokens.append(("SET", var_name, "BOOLEAN", True))
@@ -156,5 +153,5 @@ def lex(code):
             else:
                 raise RuntimeError(f"Unsupported value type on line {line_num}")
 
-    print(f"Generated tokens: {tokens}")  # Debug output for the tokens
+    print(f"Generated tokens: {tokens}") 
     return tokens

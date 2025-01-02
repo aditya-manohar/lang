@@ -1,7 +1,8 @@
 import re
 import pandas as pd
+import statistics
 
-def clean_data(data, strategy="mean", custom_value=None):
+def clean_data(data, strategy="mean", custom_value=None, columns=None):
     try:
         if strategy == "remove duplicates":
             before = len(data)
@@ -10,12 +11,15 @@ def clean_data(data, strategy="mean", custom_value=None):
             print(f"Removed {before - after} duplicate rows.")
 
         elif strategy in ["mean", "median", "mode"]:
-            for column in data.columns:
+            if columns is None: 
+                columns = data.columns
+            
+            for column in columns:
                 if data[column].isnull().any():
-                    if custom_value is not None:  # Use custom value if provided
-                        custom_value = float(custom_value)  # Ensure numeric value
+                    if custom_value is not None:  
+                        custom_value = float(custom_value) 
                         data[column].fillna(custom_value, inplace=True)
-                    else:  # Use default mean/median/mode
+                    else:  
                         if strategy == "mean":
                             data[column].fillna(data[column].mean(), inplace=True)
                         elif strategy == "median":
@@ -96,6 +100,71 @@ def remove_columns(data, columns):
         print(f"Error removing column(s) '{columns}': {e}")
 
     return data  # Return modified data for chaining or non-chaining
+
+def mean(var_name, variables):
+    if var_name in variables:
+        data = variables[var_name]
+        return statistics.mean(data)
+    else:
+        raise ValueError(f"Variable {var_name} not found.")
+
+def median(var_name, variables):
+    if var_name in variables:
+        data = variables[var_name]
+        return statistics.median(data)
+    else:
+        raise ValueError(f"Variable {var_name} not found.")
+
+def mode(var_name, variables):
+    if var_name in variables:
+        data = variables[var_name]
+        try:
+            return statistics.mode(data)
+        except statistics.StatisticsError:
+            raise ValueError(f"No unique mode found for {var_name}.")
+    else:
+        raise ValueError(f"Variable {var_name} not found.")
+
+def fill_missing_values(data, strategy, columns=None, custom_value=None):
+    try:
+        if columns is None:  # If no specific columns are mentioned, apply to all
+            columns = data.columns
+        
+        for column in columns:
+            if data[column].isnull().any():
+                if custom_value is not None:  # Use custom value if provided
+                    custom_value = float(custom_value)  # Ensure numeric value
+                    data[column].fillna(custom_value, inplace=True)
+                else:  # Use default mean/median/mode
+                    if strategy == "mean":
+                        data[column].fillna(data[column].mean(), inplace=True)
+                    elif strategy == "median":
+                        data[column].fillna(data[column].median(), inplace=True)
+                    elif strategy == "mode":
+                        mode_value = data[column].mode()[0] if not data[column].mode().empty else None
+                        data[column].fillna(mode_value, inplace=True)
+            print(f"Filled missing values in column: {column} using {strategy}")
+    except Exception as e:
+        print(f"Error in fill_missing_values: {e}")
+    return data
+
+def remove_rows_with_null(data):
+    try:
+        before = len(data)
+        data = data.dropna()  # Drop rows with any null values
+        after = len(data)
+        print(f"Removed {before - after} rows with null values.")
+    except Exception as e:
+        print(f"Error removing rows with null values: {e}")
+    return data
+
+def rename_column(data, old_name, new_name):
+    """Renames a column in the dataset."""
+    if old_name in data.columns:
+        data.rename(columns={old_name: new_name}, inplace=True)
+    else:
+        raise KeyError(f"Column '{old_name}' not found.")
+    return data
 
 
 

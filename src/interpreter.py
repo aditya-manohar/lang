@@ -1,45 +1,41 @@
 from custom_builtins.data_loader import load_data
-from custom_builtins.data_cleaner import clean_data,remove_rows,remove_columns
-from custom_builtins.helper import execute_block
+from custom_builtins.data_cleaner import clean_data,remove_rows,remove_columns,mean,median,mode,fill_missing_values,remove_rows_with_null,rename_column
 
 variables = {}
 
 def interpret(ast):
     for node in ast:
         if node[0] == "STRING":
-            print(node[1])  # Print string directly
+            print(node[1]) 
 
         elif node[0] == "EXPRESSION":
             expression = node[1]
             try:
-                # Handle expressions with comma (",") for concatenation
                 if isinstance(expression, list):
                     result = []
                     for part in expression:
-                        part = part.strip()  # Remove extra spaces around parts
-                        if part.startswith('"') and part.endswith('"'):  # Handle strings
-                            result.append(part[1:-1])  # Remove the quotes around string
-                        elif part in variables:  # Handle variables
-                            result.append(str(variables[part]))  # Convert variable to string
+                        part = part.strip() 
+                        if part.startswith('"') and part.endswith('"'): 
+                            result.append(part[1:-1])  
+                        elif part in variables:  
+                            result.append(str(variables[part]))
                         else:
                             raise NameError(f"Variable or string {part} not recognized.")
-                    print("".join(result))  # Concatenate the parts without spaces
+                    print("".join(result)) 
                     continue
 
-                # Evaluate arithmetic expressions like a + b, a - c, etc.
                 if "+" in expression or "-" in expression or "*" in expression or "/" in expression or "%" in expression or "**" in expression:
                     for var in variables:
-                        expression = expression.replace(var, str(variables[var]))  # Replace vars with their values
-                    result = eval(expression)  # Evaluate arithmetic expressions directly
+                        expression = expression.replace(var, str(variables[var])) 
+                    result = eval(expression) 
                     print(result)
                     continue
 
                 else:
-                    # Handle single variable or literal expressions
                     if expression in variables:
-                        print(variables[expression])  # Output the value of the variable
+                        print(variables[expression]) 
                     else:
-                        print(expression)  # Output the expression as is
+                        print(expression)
             except Exception as e:
                 print(f"Error evaluating expression: {e}")
 
@@ -150,10 +146,62 @@ def interpret(ast):
                         current_data= remove_columns(current_data,column_name)
                     else:
                         raise ValueError(f"Invalid chain operation : {step}")
-                elif step == "output":
+                elif step.startswith("mean for"):
+                    columns_str = step.split("for")[-1].strip().strip("'")
+                    columns = [col.strip() for col in columns_str.split(",")]
+                    current_data = fill_missing_values(current_data,"mean",columns)
+                    try:
+                        current_data = current_data[columns].mean(axis=0)
+                    except KeyError as e:
+                        print(f"{e}")
+                elif step.startswith("median for"):
+                    columns_str = step.split("for")[-1].strip().strip("'")
+                    columns = [col.strip() for col in columns_str.split(",")]
+                    current_data = fill_missing_values(current_data,"median",columns)
+                    try:
+                        current_data = current_data[columns].median(axis=0)
+                    except KeyError as e:
+                        print(f"{e}")
+                elif step.startswith("mode for"):
+                    columns_str = step.split("for")[-1].strip().strip("'")
+                    columns = [col.strip() for col in columns_str.split(",")]
+                    current_data = fill_missing_values(current_data,"mode",columns)
+                    try:
+                        current_data = current_data[columns].mode().iloc[0]  # Assuming mode returns multiple modes
+                    except KeyError as e:
+                        print(f"{e}")
+                elif step == "remove rows with null":
+                    current_data = remove_rows_with_null(current_data)
+                elif step.startswith("rename column"):
+                    parts = step.split(" ")
+                    if len(parts) == 5 and parts[0] == 'rename' and parts[1] == 'column' and parts[3] == 'to':
+                        old_name = parts[2]
+                        new_name = parts[4]
+                        try:
+                            current_data = rename_column(current_data, old_name, new_name)
+                            print(f"Column '{old_name}' renamed to '{new_name}'")
+                        except KeyError as e:
+                            print(f"{e}")
+                        else:
+                            print(f"Column '{old_name}' not found")
+                elif step.startswith("view first"):
+                    try:
+                        num = int(step.split(" ")[-1])
+                        print(current_data.head(num))
+                    except:
+                        print(f"{e}")
+                elif step.startswith("view last"):
+                    try:
+                        num = int(step.split(" ")[-1])
+                        print(current_data.tail(num))
+                    except Exception as e:
+                        print(f"{e}")
+                elif step.startswith("save"):
+                    save_var_name = step.split(" ")[-1].strip()
+                    variables[save_var_name] = current_data
+                    print(f"Data saved as '{save_var_name}'")
+                elif step == 'output':
                     print(current_data)
-                else:
-                    raise ValueError(f"Unsupported chain operation: {step}")
 
             variables[var_name] = current_data
 
@@ -168,12 +216,5 @@ def interpret(ast):
                     print(f"Error displaying selected columns: {e}")
             else:
                 print(f"Variable '{var_name}' not found")
-
-        elif node[0] == "SPLIT":
-            data = variables.get('data')
-            ratio = node[2]
-            train_data,test_data = split_data(data,ratio)
-            variables['train_data'] = train_data
-            variables['test_data'] = test_data 
 
         

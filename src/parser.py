@@ -17,7 +17,7 @@ def parse(tokens):
             ast.append(("INPUT", var_name))
         elif token[0] == "TYPE":
             var_name = token[1]
-            ast.append(("TYPE", var_name))  # Add type() expression to the AST
+            ast.append(("TYPE", var_name))
         elif token[0] == "ID":
             ast.append(("ID", token[1]))
         elif token[0] == "IF":
@@ -58,12 +58,24 @@ def parse(tokens):
             var_name = token[1]
             steps = token[2]
             ast.append(("CHAIN",var_name,steps))
+        elif token[0] == "MEAN":
+            var_name = token[1]
+            ast.append(("MEAN",var_name))
+        elif token[0] == "MEDIAN":
+            var_name = token[1]
+            ast.append(("MEDIAN",var_name))
+        elif token[0] == "MODE":
+            var_name = token[1]
+            ast.append(("MODE",var_name))
         elif token[0] == "OUTPUT_COLUMNS":
             var_name = token[1]
             columns = token[2]
             ast.append(("OUTPUT_COLUMNS",var_name,columns))
         elif token[0] == "SPLIT":
             ast.append(("SPLIT",token[1],token[2]))
+        elif token[0] == "REMOVE_NULL":
+            var_name = token[1]
+            ast.append(("REMOVE_NULL",var_name))
         else:
             raise SyntaxError(f"Unexpected token {token}")
     
